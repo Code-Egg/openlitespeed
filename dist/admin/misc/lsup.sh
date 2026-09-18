@@ -1,6 +1,6 @@
 #! /bin/sh
 
-LSUPVERSION=v2.84-04/12/2024
+LSUPVERSION=v2.85-18/09/2026
 LOCKFILE=/tmp/olsupdatingflag
 
 PIDFILE=/tmp/lshttpd/lshttpd.pid
@@ -67,18 +67,18 @@ stopService()
     if [ $RUNNING -eq 1 ] ; then
         ${LSWSCTRL} stop
     fi
-    
+
     FPID=`cat $PIDFILE`
     if [ "x$FPID" != "x" ]; then
         kill -9 $FPID 2>/dev/null
-    fi    
-    
+    fi
+
     #when FPID not exist, try again
     FPID=`ps -ef | grep openlitespeed | grep -v grep | awk '{print $2}'`
     if [ "x$FPID" != "x" ]; then
         kill -9 $FPID 2>/dev/null
-    fi    
-    
+    fi
+
 }
 
 
@@ -103,28 +103,28 @@ fi
 
 echoR()
 {
-	if [ $# -eq 0 ] ; then
-		echo
-	else
+        if [ $# -eq 0 ] ; then
+                echo
+        else
         if [ "${ISLINUX}" = "yes" ] ; then
             echo "$(tput setaf 1)$@$(tput sgr0)"
         else
             echo -e "\e[31m$@\e[39m"
         fi
-	fi
+        fi
 }
 
 echoG()
 {
-	if [ $# -eq 0 ] ; then
-		echo
-	else
+        if [ $# -eq 0 ] ; then
+                echo
+        else
         if [ "${ISLINUX}" = "yes" ] ; then
             echo "$(tput setaf 2)$@$(tput sgr0)"
         else
             echo -e "\e[32m$@\e[39m"
         fi
-	fi
+        fi
 }
 
 echoG "lsup.sh Version: ${LSUPVERSION}."
@@ -160,7 +160,7 @@ if [ $? = 0 ] ; then
     if [ $? != 0 ] ; then
         mv -f ${LSWSHOME}/admin/misc/lsup.sh ${LSWSHOME}/admin/misc/lsup.shold >/dev/null 2>&1
         mv -f ${LSWSHOME}/admin/misc/lsup.shnew ${LSWSHOME}/admin/misc/lsup.sh >/dev/null 2>&1
-        chmod 777 ${LSWSHOME}/admin/misc/lsup.sh >/dev/null 2>&1
+        chmod 755 ${LSWSHOME}/admin/misc/lsup.sh >/dev/null 2>&1
         echoG "lsup.sh (Version ${LSUPVERSION}) updated, now start new one."
         exec ${LSWSHOME}/admin/misc/lsup.sh "$@"
         exit 10
@@ -169,7 +169,7 @@ if [ $? = 0 ] ; then
     fi
 fi
 
-if [ -f ${LSWSHOME}/autoupdate/release ] ; then 
+if [ -f ${LSWSHOME}/autoupdate/release ] ; then
     NEWVERSION=`cat ${LSWSHOME}/autoupdate/release`
 else
     if [ "x${NEWVERSION}" = "x" ] ; then
@@ -182,13 +182,13 @@ if [ "x${NEWVERSION}" = "x" ] ; then
     echoR "Error: cannot get the latest stable version info."
 fi
 
-if [ -f ${LSWSHOME}/VERSION ] ; then 
+if [ -f ${LSWSHOME}/VERSION ] ; then
     CURVERSION=`cat ${LSWSHOME}/VERSION`
 fi
-if [ -f ${LSWSHOME}/VERSION.org ] ; then 
+if [ -f ${LSWSHOME}/VERSION.org ] ; then
     ORGVERSION=`cat ${LSWSHOME}/VERSION.org`
 fi
-if [ -f ${LSWSHOME}/VERSION.old ] ; then 
+if [ -f ${LSWSHOME}/VERSION.old ] ; then
     PREVERSION=`cat ${LSWSHOME}/VERSION.old`
 fi
 
@@ -199,7 +199,7 @@ toggle()
     if [ -f $PIDFILE ] ; then
         FPID=`cat $PIDFILE`
     fi
-    
+
     if [ "x$FPID" = "x" ] ; then
         FPID=`ps  -ef > /tmp/testpid ; cat /tmp/testpid | grep 'lshttpd - main' | awk '{printf "%d ", $2}'`
         rm /tmp/testpid
@@ -208,7 +208,7 @@ toggle()
             exit 2
         fi
     fi
-    
+
     echoG Main process pid is $FPID
     kill -0 $FPID 2>/dev/null
     if [ $? = 0 ] ; then
@@ -226,19 +226,19 @@ toggle()
 
 status()
 {
-    if [ "x${ORGVERSION}" != "x" ] ; then 
+    if [ "x${ORGVERSION}" != "x" ] ; then
         echoG "You original installed version is ${ORGVERSION}."
     fi
-    if [ "x${PREVERSION}" != "x" ] ; then 
+    if [ "x${PREVERSION}" != "x" ] ; then
         echoG "Your previous installed version is ${PREVERSION}."
     fi
-    
+
     echoG "The latest stable version is ${NEWVERSION}. "
-    
+
     if [ ! -f ${LSWSHOME}/bin/openlitespeed ] ; then
         echoR It seems you do not have openlitespeed installed in ${LSWSHOME}.
         exit 3
-    
+
     else
         BINPATH=${LSWSHOME}/bin/openlitespeed
         DEBUGSTR=`${BINPATH} -v | grep DEBUG` >/dev/null 2>&1
@@ -262,12 +262,12 @@ clean()
     rm -rf /tmp/lshttpd/*
     if [ -e /dev/shm/ols ] ; then
         rm -rf /dev/shm/ols/*
-    else 
+    else
         rm -rf /tmp/shm/ols/*
     fi
     rm -rf ${LSWSHOME}/cgid/cgid.sock*
     rm -rf ${LSWSHOME}/autoupdate/*
-    
+
     startService
     echoG Cleaned and service started.
     exit 0
@@ -290,34 +290,34 @@ testCurrentStatus()
     if [ -f ${LOCKFILE} ] ; then
         echoG "Openlitespeed is updating ...."
     fi
-    
+
     echoG Checking error log ...
-    cat ${LSWSHOME}/logs/error.log | grep ERROR 
+    cat ${LSWSHOME}/logs/error.log | grep ERROR
     if [ $? = 0 ] ; then
         echoR "There is ERROR(s) in your error log."
     else
         echoG "There isn't any ERROR in your error log."
     fi
-    
+
     echoG Checking server core file ...
     ls -l /tmp/lshttpd/core*  >/dev/null 2>&1
     if [ $? = 0 ] ; then
         #Move the core file the bak_core and check together
         if [ ! -e /tmp/lshttpd/bak_core/ ] ; then
-            mkdir /tmp/lshttpd/bak_core/ 
+            mkdir /tmp/lshttpd/bak_core/
         fi
         mv /tmp/lshttpd/core* /tmp/lshttpd/bak_core/
     fi
-    
-    
+
+
     if [ -d /tmp/lshttpd/bak_core/ ] ; then
-    
+
         ls -l /tmp/lshttpd/bak_core/core* | grep core >/dev/null 2>&1
         if [ $? != 0 ] ; then
             echoG "Good. There isn't any core file."
         else
             echoR "There is core file(s) in /tmp/lshttpd/bak_core/"
-            
+
             echo ${CURLONGVERSION} | grep DEBUG >/dev/null 2>&1
             if [ $? != 0 ] ; then
                 echoG "You are not running a DEBUG version. You can use the below command to switch to DEBUG version"
@@ -325,16 +325,16 @@ testCurrentStatus()
                 echoG "And run ./lsup.sh -t again when you get a core file again or after two days running with the DEBUG version."
                 exit 4
             fi
-            
+
             which gdb  >/dev/null 2>&1
             if [ $? != 0 ] ; then
                 echoG "You do not have 'gdb' installed,  pleaese install it first and run this command again."
                 exit 5
-            fi   
-            
+            fi
+
             #output
             echo "Platform `uname -s -m`, installed ${CURLONGVERSION}" > ${LSWSHOME}/corefile.txt
-            
+
             gdb --batch --command=${CURDIR}/gdb-bt ${LSWSHOME}/bin/openlitespeed /tmp/lshttpd/bak_core/core* >> ${LSWSHOME}/corefile.txt
             echoR "Please send file ${LSWSHOME}/corefile.txt to bug@litespeedtech.com to help us to figure the issue soon, thanks."
         fi
@@ -348,41 +348,41 @@ display_usage()
 {
     cat <<EOF
 Usage: lsup.sh [-t] | [-c] | [[-d] [-r] | [-v|-e VERSION]]
-  
+
   -d
      Choose Debug version to upgrade or downgrade, will do clean like -c at the same time.
 
   -s
      Choose Asan version to upgrade or downgrade, will do clean like -c at the same time.
-     
+
   -b
      Choose under development version instead of released version. <special option, be careful>
-  
+
   -v VERSION
      If VERSION is given, this command will try to install specified VERSION. Otherwise, it will get the latest version from ${LSWSHOME}/autoupdate/release.
 
   -e VERSION
      If VERSION is given, this command will try to install the binaries of the specified VERSION. Otherwise, it will get the latest version from ${LSWSHOME}/autoupdate/release.
 
-  -r 
+  -r
      Recover to the original installed version which is in file VERSION.
-     
+
   -p
      Recover to the previous installed version which was renamed to .old files.
-      
+
   -t
      To test openlitespeed running status.
-     
+
   -g
      Toggle DEBUG log of running openlitespeed.
-     
+
   -c
      Do some clean and restart openlitespeed service.
-     
+
   -a
      Change the webAdmin password.
 
-  -h | --help     
+  -h | --help
      Display this help and exit.
 
 EOF
@@ -391,7 +391,7 @@ EOF
 
 
 VERSION=${NEWVERSION}
-while [ "x$1" != "x" ] 
+while [ "x$1" != "x" ]
 do
     if [ "x$1" = "x-d" ] ; then
         ISDEBUG=yes
@@ -399,7 +399,7 @@ do
         shift
     elif [ "x$1" = "x-s" ] ; then
         ISASAN=yes
-        shift    
+        shift
     elif [ "x$1" = "x-b" ] ; then
         ISBETA=yes
         shift
@@ -419,7 +419,7 @@ do
         shift
         if [ "x$VERSION" = "x" ] ; then
             display_usage
-        fi    
+        fi
     elif [ "x$1" = "x-r" ] ; then
         VERSION=${ORGVERSION}
         echoG "You choose to install the original installed version."
@@ -435,8 +435,8 @@ do
     elif [ "x$1" = "x-t" ] ; then
         testCurrentStatus
     elif [ "x$1" = "x-a" ] ; then
-        changeAdminPasswd        
-    else 
+        changeAdminPasswd
+    else
         display_usage
     fi
 done
@@ -445,6 +445,13 @@ if [ "x${VERSION}" = "x" ] ; then
     echoR "Can not get the right version for installation, quit."
     exit 6
 fi
+
+case "${VERSION}" in
+    *[!0-9A-Za-z._-]*)
+        echoR "Invalid version for installation, quit."
+        exit 6
+        ;;
+esac
 
 
 if [ -f ${LOCKFILE} ] ; then
@@ -463,14 +470,61 @@ fi
 
 touch ${LOCKFILE}
 
-TEMPPATH=${LSWSHOME}/autoupdate
-if [ ! -e ${TEMPPATH} ] ; then
-    TEMPPATH=/usr/src
+STAGEPARENT=${LSWSHOME}/admin/misc
+TEMPPATH=${STAGEPARENT}/.lsup-work
+
+if [ "`id -u`" != "0" ] ; then
+    echoR "Error: lsup.sh must run as root."
+    rm -rf ${LOCKFILE}
+    exit 9
 fi
-cd ${TEMPPATH}
-if [ -f ols.tgz ] ; then
-    rm -f ols.tgz
+
+STAGEOWNER=`stat -c %u "${STAGEPARENT}" 2>/dev/null`
+if [ "x${STAGEOWNER}" = "x" ] ; then
+    STAGEOWNER=`stat -f %u "${STAGEPARENT}" 2>/dev/null`
 fi
+STAGEMODE=`stat -c %a "${STAGEPARENT}" 2>/dev/null`
+if [ "x${STAGEMODE}" = "x" ] ; then
+    STAGEMODE=`stat -f %Lp "${STAGEPARENT}" 2>/dev/null`
+fi
+STAGEGROUPMODE=${STAGEMODE%?}
+
+case "${STAGEMODE}" in
+    *[2367]) STAGEPARENTUNSAFE=yes ;;
+esac
+case "${STAGEGROUPMODE}" in
+    *[2367]) STAGEPARENTUNSAFE=yes ;;
+esac
+if [ -L "${STAGEPARENT}" ] || [ ! -d "${STAGEPARENT}" ] || \
+   [ "x${STAGEOWNER}" != "x0" ] || [ "x${STAGEPARENTUNSAFE}" = "xyes" ] ; then
+    echoR "Error: unsafe updater staging parent ${STAGEPARENT}."
+    rm -rf ${LOCKFILE}
+    exit 9
+fi
+
+if [ -L "${TEMPPATH}" ] ; then
+    echoR "Error: unsafe updater staging directory ${TEMPPATH}."
+    rm -rf ${LOCKFILE}
+    exit 9
+fi
+if [ -e "${TEMPPATH}" ] ; then
+    rm -rf "${TEMPPATH}"
+fi
+mkdir -m 700 "${TEMPPATH}"
+if [ $? != 0 ] ; then
+    echoR "Error: cannot create private updater staging directory ${TEMPPATH}."
+    rm -rf ${LOCKFILE}
+    exit 9
+fi
+chown root:root "${TEMPPATH}" && chmod 700 "${TEMPPATH}"
+if [ $? != 0 ] ; then
+    echoR "Error: cannot secure updater staging directory ${TEMPPATH}."
+    rm -rf "${TEMPPATH}"
+    rm -rf ${LOCKFILE}
+    exit 9
+fi
+
+cd "${TEMPPATH}"
 
 
 if [ "x${ISBETA}" = "xyes" ]; then
@@ -495,9 +549,9 @@ fi
 URL=https://openlitespeed.org/${URLDIR}/openlitespeed-${VERSION}-${ARCH}-linux.${URLMODE}tgz
 echoG "download URL is ${URL}"
 
-testsz=1000000  
+testsz=1000000
 RET=1
-$DLCMD ols.tgz $URL
+$DLCMD ols.tgz "${URL}"
 RET=$?
 if [ $RET = 0 ] ; then
     tz=$(stat -c%s ols.tgz)
@@ -505,7 +559,7 @@ if [ $RET = 0 ] ; then
         RET=1
     fi
 fi
-    
+
 if [ $RET != 0 ] ; then
     if [ "x${URLDIR}" = "xpreuse" ] ; then
         echoR "Error, failed to download $URL, quit."
@@ -516,9 +570,9 @@ if [ $RET != 0 ] ; then
         URLDIR=preuse
         URL=https://openlitespeed.org/${URLDIR}/openlitespeed-${VERSION}-${ARCH}-linux.${URLMODE}tgz
         echoG "download URL is ${URL}"
-        
+
         RET=1
-        $DLCMD ols.tgz $URL
+        $DLCMD ols.tgz "${URL}"
         RET=$?
         if [ $RET = 0 ] ; then
             tz=$(stat -c%s ols.tgz)
@@ -526,7 +580,7 @@ if [ $RET != 0 ] ; then
                 RET=1
             fi
         fi
-        
+
         if [ $RET != 0 ] ; then
             echoR "Error, failed to download $URL, quit."
             rm -rf ${LOCKFILE}
@@ -542,11 +596,11 @@ else
     SRCDIR=${TEMPPATH}/openlitespeed-${VERSION}
 fi
 
-if [ -f ${LSWSHOME}/VERSION ] ; then 
-    if [ ! -f ${LSWSHOME}/VERSION.org ] ; then 
+if [ -f ${LSWSHOME}/VERSION ] ; then
+    if [ ! -f ${LSWSHOME}/VERSION.org ] ; then
         cp ${LSWSHOME}/VERSION ${LSWSHOME}/VERSION.org
     fi
-    
+
     cp -f ${LSWSHOME}/VERSION ${LSWSHOME}/VERSION.old
 fi
 
@@ -557,20 +611,20 @@ fi
 rm -rf /tmp/lshttpd/*
 if [ -e /dev/shm/ols ] ; then
     rm -rf /dev/shm/ols/*
-else 
+else
     rm -rf /tmp/shm/ols/*
 fi
 
 cd $SRCDIR/
 if [ "x${ISLINUX}" = "xno" ] ; then
-    
+
     echoR "Your platform is $OSNAME, we do not have pre-built package ready for it."
     echoG "Need to compile from source code, please wait for 10~20 minutes."
     if [ -f ./build.sh ] ; then
         ./build.sh
     else
         echoR "This version does not have ./build.sh, please run './configure; make; make install' to install it."
-        echoG Usually ./configure need some parameters, this auto tool cannot continue. Exit. 
+        echoG Usually ./configure need some parameters, this auto tool cannot continue. Exit.
         rm -rf ${LOCKFILE}
         exit 8
     fi
@@ -583,7 +637,7 @@ if [ -f ${LSWSHOME}/bin/openlitespeed ] ; then
     echo "###" >> ols.conf
 fi
 
-if [ "$ONLYBIN" = "no" ] ; then 
+if [ "$ONLYBIN" = "no" ] ; then
     ./install.sh
 else
     stopService
@@ -594,10 +648,11 @@ else
 fi
 
 rm -rf $SRCDIR
+rm -rf "${TEMPPATH}"
 rm -rf ${LSWSHOME}/autoupdate/*
 
 #Sign it and keep old sign
-if [ ! -e ${LSWSHOME}/PLAT ] ; then 
+if [ ! -e ${LSWSHOME}/PLAT ] ; then
     echo lsup > ${LSWSHOME}/PLAT
 else
     ORGPLAT=`cat ${LSWSHOME}/PLAT`
@@ -617,14 +672,11 @@ else
     RUNSTATE="stopped"
 fi
 
-if [ "$ONLYBIN" = "no" ] ; then 
+if [ "$ONLYBIN" = "no" ] ; then
     PACKNAME="files"
 else
     PACKNAME="binaries"
 fi
 echoG "All ${PACKNAME} are updated and service is ${RUNSTATE}."
-echo 
 echo
-
-
-
+echo
